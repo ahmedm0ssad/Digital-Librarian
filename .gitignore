@@ -1,0 +1,7 @@
+*.class
+*.jar
+*.log
+__pycache__/
+.DS_Store
+/output
+/books
