@@ -11,12 +11,8 @@ behaviour, and scalability analysis.
 
 Team members
 ------------
-- [Your Name]
-- Habiba
-
-Course
-------
-[Course Name / Number] — placeholder
+- Ahmed Mossad
+- Habiba Arafa
 
 Prerequisites
 -------------
