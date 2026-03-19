@@ -1,4 +1,4 @@
-nodes,execution_time_seconds
-1,0
-2,0
-3,0
+reducers,execution_time_seconds
+1,103.96
+2,90.0
+3,94.718
