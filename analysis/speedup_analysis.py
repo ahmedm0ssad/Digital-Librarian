@@ -5,79 +5,56 @@ import os
 from datetime import datetime
 
 def load_benchmark(csv_path):
-    """Load benchmark data from CSV"""
     df = pd.read_csv(csv_path)
     print("data loaded successfully:")
     print(df)
     return df
-
-def save_results_to_file(results_text, output_dir):
-    """Save text results to a file"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_file = os.path.join(output_dir, f"analysis_results_{timestamp}.txt")
+def plot_execution_time_vs_cluster(df, output_path):
     
-    with open(results_file, 'w', encoding='utf-8') as f:
-        f.write(results_text)
+    df['cluster_size'] = df['reducers']
     
-    print(f"\nresults saved to: {results_file}")
-    return results_file
-
-def plot_speedup(df, output_path):
-    """Compute speedup and create visualization"""
-    # Get baseline time with 1 reducer
-    baseline = df[df['reducers'] == 1]['execution_time_seconds'].values[0]
-    
-    # Calculate speedup
-    df['speedup'] = baseline / df['execution_time_seconds']
-    df['ideal_speedup'] = df['reducers']
-    
-    # Create results text
     results_text = ""
     results_text += "="*60 + "\n"
-    results_text += "SPEEDUP ANALYSIS RESULTS\n"
+    results_text += "EXECUTION TIME VS CLUSTER SIZE\n"
     results_text += "="*60 + "\n"
-    results_text += df.to_string(index=False) + "\n"
-    results_text += f"\nbaseline time (1 reducer): {baseline:.2f} seconds\n"
+    results_text += "cluster_size  execution_time_seconds\n"
+    for _, row in df.iterrows():
+        results_text += f"{int(row['cluster_size'])}            {row['execution_time_seconds']:.1f}\n"
     
-    # Print to terminal
     print("\n" + "="*60)
-    print("SPEEDUP ANALYSIS RESULTS")
+    print("EXECUTION TIME VS CLUSTER SIZE")
     print("="*60)
-    print(df.to_string(index=False))
-    print(f"\nbaseline time (1 reducer): {baseline:.2f} seconds")
+    print("cluster_size  execution_time_seconds")
+    for _, row in df.iterrows():
+        print(f"{int(row['cluster_size'])}            {row['execution_time_seconds']:.1f}")
     
-    # Create plot
     plt.figure(figsize=(10, 6))
-    plt.plot(df['reducers'], df['speedup'], 'bo-', linewidth=2, markersize=10, label='actual speedup')
-    plt.plot(df['reducers'], df['ideal_speedup'], 'r--', linewidth=2, label='ideal speedup (linear)')
+    plt.plot(df['cluster_size'], df['execution_time_seconds'], 'bo-', linewidth=2, markersize=10, label='execution time')
     
-    # Add labels and title
-    plt.xlabel('number of reducers', fontsize=12)
-    plt.ylabel('speedup factor', fontsize=12)
-    plt.title('scalability analysis: speedup vs number of reducers', fontsize=14)
+    plt.xlabel('cluster size (nodes)', fontsize=12)
+    plt.ylabel('execution time (seconds)', fontsize=12)
+    plt.title('scalability analysis: execution time vs cluster size', fontsize=14)
     plt.grid(True, alpha=0.3)
     plt.legend()
     
-    # Add value labels on points
-    for i, row in df.iterrows():
-        plt.annotate(f'{row["speedup"]:.2f}x\n({row["execution_time_seconds"]:.1f}s)', 
-                    (row['reducers'], row['speedup']),
+    for _, row in df.iterrows():
+        plt.annotate(f'{row["execution_time_seconds"]:.1f}s', 
+                    (row['cluster_size'], row['execution_time_seconds']),
                     textcoords="offset points", 
                     xytext=(0,10), 
                     ha='center',
-                    fontsize=9)
+                    fontsize=10)
     
-    # Save plot
+    plt.xticks(df['cluster_size'])
+    
+    plt.ylim(0, max(df['execution_time_seconds']) * 1.2)
+    
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     print(f"\ngraph saved to: {output_path}")
     
-    # Show plot
-    plt.show()
-    
-    return df, results_text
+    return results_text
 
 def analyze_efficiency(df):
-    """Analyze efficiency and overhead"""
     baseline = df[df['reducers'] == 1]['execution_time_seconds'].values[0]
     
     results_text = "\n" + "="*60 + "\n"
@@ -86,6 +63,7 @@ def analyze_efficiency(df):
     
     print("\n" + "="*60)
     print("EFFICIENCY ANALYSIS")
+
     print("="*60)
     
     for _, row in df.iterrows():
@@ -102,12 +80,10 @@ def analyze_efficiency(df):
             results_text += line + "\n"
             results_text += line2 + "\n"
     
-    # Calculate serial fraction using Amdahl's Law
     if len(df) >= 3:
         t1 = baseline
         t2 = df[df['reducers'] == 2]['execution_time_seconds'].values[0]
         
-        # Estimate parallelizable fraction from 1->2 speedup
         s = t1/t2
         p = (s - 1)/(s * (1 - 1/2))
         if 0 <= p <= 1:
@@ -128,24 +104,22 @@ def analyze_efficiency(df):
     return results_text
 
 if __name__ == "__main__":
-    # File paths
-    csv_path = os.path.join("results", "benchmark_results.csv")
-    output_path = os.path.join("results", "speedup_graph.png")
+    current_dir = os.getcwd()
+    print(f"current directory: {current_dir}")
     
-    # Check if CSV exists
+    csv_path = os.path.join("analysis", "results", "benchmark_results.csv")
+    output_path = os.path.join(current_dir, "speedup_graph.png")
+    results_file = os.path.join(current_dir, "speedup_results.txt")
+    
+    print(f"results will be saved to: {results_file}")
+    
     if not os.path.exists(csv_path):
         print(f"csv file not found: {csv_path}")
     else:
-        # Load data
         df = load_benchmark(csv_path)
-        
-        # Create plot and get results text
         df_result, speedup_text = plot_speedup(df, output_path)
-        
-        # Analyze efficiency
         efficiency_text = analyze_efficiency(df_result)
         
-        # Combine all results
         final_results = speedup_text + efficiency_text
         final_results += "\n" + "="*60 + "\n"
         final_results += "analysis done\n"
@@ -155,5 +129,7 @@ if __name__ == "__main__":
         print("analysis done")
         print("="*60)
         
-        # Save results to file
-        save_results_to_file(final_results, "results")
+        with open(results_file, 'w', encoding='utf-8') as f:
+            f.write(final_results)
+        
+        print(f"\nresults saved to: {results_file}")

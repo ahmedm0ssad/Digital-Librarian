@@ -1,0 +1,28 @@
+============================================================
+SPEEDUP ANALYSIS RESULTS
+============================================================
+ reducers  execution_time_seconds  speedup  ideal_speedup
+        1                      68 1.000000              1
+        2                      61 1.114754              2
+        3                      63 1.079365              3
+
+baseline time (1 reducer): 68.00 seconds
+
+============================================================
+EFFICIENCY ANALYSIS
+============================================================
+2.0 reducers: 55.7% efficient, 44.3% overhead
+   speedup: 1.11x (ideal: 2x)
+3.0 reducers: 36.0% efficient, 64.0% overhead
+   speedup: 1.08x (ideal: 3x)
+
+============================================================
+AMDAHL'S LAW ANALYSIS
+============================================================
+parallelizable fraction (p): 20.6%
+serial fraction (1-p): 79.4%
+maximum theoretical speedup with infinite reducers: 1.26x
+
+============================================================
+analysis done
+============================================================
