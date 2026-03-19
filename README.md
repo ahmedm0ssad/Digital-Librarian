@@ -75,3 +75,5 @@ Notes and next steps
 - Ensure you adapt paths and cluster config in the scripts to match your environment.
 - After running experiments, populate `analysis/results/benchmark_results.csv` and
   generate the speedup graph via `analysis/speedup_analysis.py`.
+
+Report Link : https://docs.google.com/document/d/1IyiDaDBKHouCJTS8brZ-xddPb-4QmZy4JsN_pmGj4po/edit?tab=t.0
