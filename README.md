@@ -1,29 +1,28 @@
-The Digital Librarian
-=====================
+# The Digital Librarian
 
-Project description
--------------------
+## Project description
+
 The Digital Librarian is a Distributed Reverse Indexing system built on top of
 HDFS and Hadoop MapReduce. The project produces an inverted index mapping each
 term to a posting list of document identifiers and term counts. This project is
 designed for teaching and experimentation with distributed storage, shuffle
 behaviour, and scalability analysis.
 
-Team members
-------------
+## Team members
+
 - Ahmed Mossad
 - Habiba Arafa
 
-Prerequisites
--------------
+## Prerequisites
+
 - Java 8 or later
 - Hadoop 3.x (HDFS + YARN)
 - Maven (or your preferred Java build tool)
 - Python 3 with packages: pandas, matplotlib
   - Install with: `pip install pandas matplotlib`
 
-Quick start
------------
+## Quick start
+
 1. Set up HDFS directories and upload data:
 
    cd scripts
@@ -43,16 +42,16 @@ Quick start
    cd ..
    mvn clean package
    hadoop jar target/reverse-index-1.0-SNAPSHOT.jar digital.librarian.ReverseIndexDriver \
-     /user/hduser/digital-librarian/input \
-     /user/hduser/digital-librarian/output \
-     2
+    /user/hduser/digital-librarian/input \
+    /user/hduser/digital-librarian/output \
+    2
 
 4. Retrieve output:
 
-   hdfs dfs -cat /user/hduser/digital-librarian/output/part-* | head -20
+   hdfs dfs -cat /user/hduser/digital-librarian/output/part-\* | head -20
 
-How to run the benchmark
-------------------------
+## How to run the benchmark
+
 The `scripts/benchmark.sh` script automates benchmark runs with different reducer counts:
 
 1. Run benchmarks with default reducer counts (1, 2, 3):
@@ -74,14 +73,14 @@ The `scripts/benchmark.sh` script automates benchmark runs with different reduce
    This generates `analysis/results/speedup_graph.png` and
    `analysis/results/speedup_results.txt` with efficiency analysis.
 
-Expected output format
-----------------------
+## Expected output format
+
 Each output line will associate a word to its posting list. Example:
 
-  word --> doc1.txt:12, doc3.txt:5
+word --> doc1.txt:12, doc3.txt:5
 
-Project structure
------------------
+## Project structure
+
 - `src/main/java/digital/librarian/` — Fully implemented Java MapReduce classes:
   - `ReverseIndexMapper.java` — Tokenizes text and filters stopwords
   - `ReverseIndexReducer.java` — Aggregates word counts per document
@@ -101,8 +100,8 @@ Project structure
 - `.gitignore` — Git ignore patterns
 - `README.md` — This document
 
-Implementation notes
---------------------
+## Implementation notes
+
 - All HDFS paths use `/user/hduser/digital-librarian/` as base directory
 - Stopwords file: `/user/hduser/digital-librarian/stopwords/stopwords.txt`
 - Input directory: `/user/hduser/digital-librarian/input`

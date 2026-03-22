@@ -16,7 +16,7 @@ HDFS_STOPWORDS="/user/hduser/digital-librarian/stopwords/stopwords.txt"
 # Project paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${SCRIPT_DIR}/.."
-JAR_NAME="digital-librarian-1.0-SNAPSHOT.jar"
+JAR_NAME="reverse-index-1.0-SNAPSHOT.jar"
 JAR_PATH="${ROOT_DIR}/target/${JAR_NAME}"
 
 echo "========================================"

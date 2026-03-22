@@ -1,4 +1,4 @@
-digital\librarian\ReverseIndexDriver.class
-digital\librarian\ReverseIndexCombiner.class
-digital\librarian\ReverseIndexMapper.class
-digital\librarian\ReverseIndexReducer.class
+digital/librarian/ReverseIndexMapper.class
+digital/librarian/ReverseIndexDriver.class
+digital/librarian/ReverseIndexCombiner.class
+digital/librarian/ReverseIndexReducer.class
