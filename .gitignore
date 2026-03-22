@@ -1,7 +1,25 @@
 *.class
 *.jar
 *.log
+*.pyc
 __pycache__/
 .DS_Store
-/build
 
+# Build directories
+/build/
+/target/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# Analysis output files (should be in analysis/results/)
+/speedup_graph.png
+/speedup_results.txt
+
+# OS files
+Thumbs.db

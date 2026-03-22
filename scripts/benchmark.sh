@@ -13,12 +13,12 @@ RESULT_CSV="${ROOT_DIR}/analysis/results/benchmark_results.csv"
 RUN_SCRIPT="${SCRIPT_DIR}/run_job.sh"
 
 if [ "$#" -eq 0 ]; then
-	NODES=(1 2 3)
+	REDUCERS=(1 2 3)
 else
-	NODES=("$@")
+	REDUCERS=("$@")
 fi
 
-echo "Benchmark nodes: ${NODES[*]}"
+echo "Benchmark reducer counts: ${REDUCERS[*]}"
 echo "Results CSV: ${RESULT_CSV}"
 
 if [ ! -f "${RUN_SCRIPT}" ]; then
@@ -26,22 +26,23 @@ if [ ! -f "${RUN_SCRIPT}" ]; then
 	exit 1
 fi
 
-for n in "${NODES[@]}"; do
+for n in "${REDUCERS[@]}"; do
 	echo "----"
-	echo "Running benchmark for ${n} node(s)"
+	echo "Running benchmark with ${n} reducer(s)"
 
-	# Placeholder: provision or configure cluster with ${n} worker nodes.
-	# e.g., call an orchestration tool or cloud API here. This is environment-specific.
+	# Note: In a real multi-node cluster scenario, you would provision nodes here
+	# For now, we vary the number of reducers to simulate parallelism
 	# provision_cluster ${n} || { echo "Provision failed for ${n} nodes"; exit 1; }
 
 	start_ts=$(date +%s)
 
-	# Run the job. We call the run script and allow it to accept an optional node count argument.
-	# The run script is expected to build and submit the MapReduce job and return non-zero on failure.
+	# Run the job with specified number of reducers
+	# The run script accepts reducer count as first argument
 	if bash "${RUN_SCRIPT}" "${n}"; then
-		echo "Run completed for ${n} nodes"
+		echo "Run completed for ${n} reducer(s)"
 	else
-		echo "Run failed for ${n} nodes" >&2
+		echo "Run failed for ${n} reducer(s)" >&2
+		echo "Continuing with next configuration..."
 	fi
 
 	end_ts=$(date +%s)
@@ -50,13 +51,13 @@ for n in "${NODES[@]}"; do
 	# Ensure results directory exists and CSV has header
 	mkdir -p "$(dirname "${RESULT_CSV}")"
 	if [ ! -f "${RESULT_CSV}" ]; then
-		echo "nodes,execution_time_seconds" > "${RESULT_CSV}"
+		echo "reducers,execution_time_seconds" > "${RESULT_CSV}"
 	fi
 
 	# Append result
 	echo "${n},${elapsed}" >> "${RESULT_CSV}"
 
-	echo "Recorded: ${n},${elapsed} -> ${RESULT_CSV}"
+	echo "Recorded: reducers=${n}, time=${elapsed}s -> ${RESULT_CSV}"
 
 	# Optional: deprovision cluster between runs if your environment requires it
 	# deprovision_cluster ${n} || true

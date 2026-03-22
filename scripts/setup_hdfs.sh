@@ -7,9 +7,11 @@ set -euo pipefail
 
 LOCAL_BOOKS_DIR=${1:-"./books"}
 HDFS_BASE=${2:-"/user/hduser/digital-librarian"}
-STOPWORDS_LOCAL="resources/stopwords.txt"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STOPWORDS_LOCAL="${SCRIPT_DIR}/../resources/stopwords.txt"
 
 echo "HDFS setup: base=${HDFS_BASE}, local_books=${LOCAL_BOOKS_DIR}"
+echo "Stopwords file: ${STOPWORDS_LOCAL}"
 
 echo "Creating HDFS directories..."
 hdfs dfs -mkdir -p "${HDFS_BASE}/input"
@@ -22,9 +24,11 @@ hdfs dfs -chmod -R 755 "${HDFS_BASE}" || true
 
 echo "Uploading stopwords..."
 if [ -f "${STOPWORDS_LOCAL}" ]; then
-	hdfs dfs -put -f "${STOPWORDS_LOCAL}" "${HDFS_BASE}/stopwords/"
+	hdfs dfs -put -f "${STOPWORDS_LOCAL}" "${HDFS_BASE}/stopwords/" && \
+		echo "Stopwords uploaded successfully to ${HDFS_BASE}/stopwords/stopwords.txt"
 else
-	echo "Warning: ${STOPWORDS_LOCAL} not found; skipping stopwords upload." >&2
+	echo "Error: ${STOPWORDS_LOCAL} not found; stopwords are required!" >&2
+	exit 1
 fi
 
 echo "Uploading books from ${LOCAL_BOOKS_DIR} (if present)"
