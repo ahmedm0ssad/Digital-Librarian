@@ -1,114 +1,152 @@
 # The Digital Librarian
 
-## Project description
+A **distributed reverse-indexing system** built on **HDFS and Hadoop MapReduce**. The Digital Librarian ingests a corpus of Project Gutenberg books and produces an inverted index mapping every term to a posting list of document identifiers and per-document term counts — enabling fast full-text search over large document collections.
 
-The Digital Librarian is a Distributed Reverse Indexing system built on top of
-HDFS and Hadoop MapReduce. The project produces an inverted index mapping each
-term to a posting list of document identifiers and term counts. This project is
-designed for teaching and experimentation with distributed storage, shuffle
-behaviour, and scalability analysis.
+> Joint project by **Ahmed Mossad** and **Habiba Arafa** — Big Data course (DSAI 427).
 
-This is a joint project built by **Ahmed Mossad** and **Habiba Arafa**.
+---
 
-## Team members
+## Features
 
-- Ahmed Mossad
-- Habiba Arafa
+- **Full MapReduce pipeline** — Mapper → Combiner → Reducer → Driver
+- **Distributed Cache** — stopword list (174 words) distributed to all nodes
+- **Text preprocessing** — tokenization, normalization, stopword filtering
+- **Scalability experiments** — configurable reducer counts with automated benchmarking
+- **Multi-node support** — Docker Compose setup for 2-node clusters
+- **Performance analysis** — Python suite with speedup graphs and **Amdahl's Law** analysis
 
-## Prerequisites
+## Architecture
 
-- Java 8 or later
-- Hadoop 3.x (HDFS + YARN)
-- Maven (or your preferred Java build tool)
-- Python 3 with packages: pandas, matplotlib
-  - Install with: `pip install pandas matplotlib`
+The system is organized as a standard MapReduce workflow:
 
-## Quick start
+```
+Gutenberg books (HDFS)
+        │
+        ▼
+  Mapper ──── tokenizes text, filters stopwords,
+        │     emits (term, docID)
+        ▼
+ Combiner ─── local aggregation to reduce shuffle traffic
+        │
+        ▼
+ Reducer ──── aggregates term frequencies per document
+        │
+        ▼
+Inverted index:  word → doc1:12, doc3:5
+```
 
-1. Set up HDFS directories and upload data:
+The **Combiner** reduces network shuffle by **~40–60%**.
 
-   cd scripts
-   ./setup_hdfs.sh ../books /user/hduser/digital-librarian
+## Repository Structure
 
-   This creates the HDFS directory structure, uploads books and stopwords.
+```
+digital-librarian/
+├── src/main/java/digital/librarian/   # Java MapReduce classes
+│   ├── ReverseIndexMapper.java        #   tokenizes + filters stopwords
+│   ├── ReverseIndexCombiner.java      #   local aggregation (optimization)
+│   ├── ReverseIndexReducer.java       #   aggregates counts per document
+│   └── ReverseIndexDriver.java        #   job configuration & submission
+├── books/                             # 10 Project Gutenberg books (~6 MB)
+├── resources/stopwords.txt            # 174-word English stopword list
+├── scripts/                           # automation scripts
+│   ├── setup_hdfs.sh                  #   HDFS setup + data upload
+│   ├── run_job.sh                     #   build JAR + run job
+│   └── benchmark.sh                   #   multi-config performance sweep
+├── analysis/                          # Python performance analysis
+│   ├── speedup_analysis.py            #   speedup graphs + Amdahl's Law
+│   └── results/                       #   benchmark CSV, TXT, PNG outputs
+├── report/                            # project report outline
+├── docker-compose-2nodes.yml          # 2-node cluster orchestration
+├── pom.xml                            # Maven build (Hadoop 3.3.6, Java 1.8)
+└── README.md
+```
 
-2. Build and run the MapReduce job (with automated build):
+## Getting Started
 
-   ./run_job.sh 2
+### Prerequisites
 
-   This builds the JAR, runs the job with 2 reducers, and displays results.
-   The JAR produced is `target/reverse-index-1.0-SNAPSHOT.jar`.
+- **Java 8+**
+- **Hadoop 3.x** (HDFS + YARN)
+- **Maven** (or preferred Java build tool)
+- **Python 3** with `pandas` and `matplotlib` (`pip install pandas matplotlib`)
 
-3. Or manually run the job:
+### 1. Setup HDFS and upload data
 
-   cd ..
-   mvn clean package
-   hadoop jar target/reverse-index-1.0-SNAPSHOT.jar digital.librarian.ReverseIndexDriver \
-    /user/hduser/digital-librarian/input \
-    /user/hduser/digital-librarian/output \
-    2
+```bash
+cd scripts
+./setup_hdfs.sh ../books /user/hduser/digital-librarian
+```
 
-4. Retrieve output:
+### 2. Build and run the job (automated)
 
-   hdfs dfs -cat /user/hduser/digital-librarian/output/part-\* | head -20
+```bash
+./run_job.sh 2        # runs the job with 2 reducers
+```
 
-## How to run the benchmark
+### 3. Run manually
 
-The `scripts/benchmark.sh` script automates benchmark runs with different reducer counts:
+```bash
+mvn clean package
+hadoop jar target/reverse-index-1.0-SNAPSHOT.jar digital.librarian.ReverseIndexDriver \
+  /user/hduser/digital-librarian/input \
+  /user/hduser/digital-librarian/output \
+  2
+```
 
-1. Run benchmarks with default reducer counts (1, 2, 3):
+### 4. Inspect the output
 
-   cd scripts
-   ./benchmark.sh
+```bash
+hdfs dfs -cat /user/hduser/digital-librarian/output/part-* | head -20
+```
 
-   Or specify custom reducer counts:
+## Benchmarking & Performance Analysis
 
-   ./benchmark.sh 1 2 4 8
+Run the automated sweep across reducer configurations:
 
-2. Results are automatically saved to `analysis/results/benchmark_results.csv`
+```bash
+cd scripts
+./benchmark.sh            # default: 1, 2, 3 reducers
+./benchmark.sh 1 2 4 8    # or a custom set
+```
 
-3. Analyze results and generate graphs:
+Results are saved to `analysis/results/benchmark_results.csv`. Then generate the analysis:
 
-   cd ..
-   python3 analysis/speedup_analysis.py
+```bash
+python3 analysis/speedup_analysis.py
+```
 
-   This generates `analysis/results/speedup_graph.png` and
-   `analysis/results/speedup_results.txt` with efficiency analysis.
+This produces speedup graphs and efficiency metrics in `analysis/results/`.
 
-## Expected output format
+### Key Results
 
-Each output line will associate a word to its posting list. Example:
+| Configuration | Time |
+|---|---|
+| 1 reducer | 39s |
+| 2 reducers | 34s |
+| 3 reducers | 30s |
 
+Multi-node experiments (1–3 nodes) reveal **negative scaling on small corpora** — Hadoop job startup and HDFS overhead dominate computation, with speedup peaking at ~1.00× (single node). This is the classic small-data/Hadoop behavior predicted by **Amdahl's Law**.
+
+## Output Format
+
+Each line maps a term to its posting list:
+
+```
 word --> doc1.txt:12, doc3.txt:5
+```
 
-## Project structure
+## Implementation Notes
 
-- `src/main/java/digital/librarian/` — Fully implemented Java MapReduce classes:
-  - `ReverseIndexMapper.java` — Tokenizes text and filters stopwords
-  - `ReverseIndexReducer.java` — Aggregates word counts per document
-  - `ReverseIndexCombiner.java` — Local aggregation for optimization
-  - `ReverseIndexDriver.java` — Job configuration and submission
-- `resources/stopwords.txt` — List of common English stopwords (174 words)
-- `books/` — Sample Project Gutenberg books for testing (10 books)
-- `scripts/` — Automated shell scripts:
-  - `setup_hdfs.sh` — Sets up HDFS directories and uploads data
-  - `run_job.sh` — Builds JAR and runs MapReduce job
-  - `benchmark.sh` — Runs multiple configurations for performance analysis
-- `analysis/` — Python analysis scripts:
-  - `speedup_analysis.py` — Generates speedup graphs and efficiency metrics
-  - `results/` — Benchmark data and generated graphs
-- `report/` — Report outline and documentation
-- `pom.xml` — Maven build configuration (Hadoop 3.3.6)
-- `.gitignore` — Git ignore patterns
-- `README.md` — This document
+- HDFS base directory: `/user/hduser/digital-librarian/`
+- Stopwords: `/user/hduser/digital-librarian/stopwords/stopwords.txt`
+- Input: `/user/hduser/digital-librarian/input` · Output: `/user/hduser/digital-librarian/output`
+- Tested against **Hadoop 3.3.6**
 
-## Implementation notes
+## Report
 
-- All HDFS paths use `/user/hduser/digital-librarian/` as base directory
-- Stopwords file: `/user/hduser/digital-librarian/stopwords/stopwords.txt`
-- Input directory: `/user/hduser/digital-librarian/input`
-- Output directory: `/user/hduser/digital-librarian/output`
-- The system is fully implemented and tested with Hadoop 3.3.6
-- Combiner optimization reduces network shuffle by ~40-60%
+Full project report: [Google Docs](https://docs.google.com/document/d/1IyiDaDBKHouCJTS8brZ-xddPb-4QmZy4JsN_pmGj4po/edit?tab=t.0)
 
-Report Link : https://docs.google.com/document/d/1IyiDaDBKHouCJTS8brZ-xddPb-4QmZy4JsN_pmGj4po/edit?tab=t.0
+## Authors
+
+- **Ahmed Mossad** — Data Science & AI, Zewail City
+- **Habiba Arafa**
