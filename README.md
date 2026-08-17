@@ -8,6 +8,8 @@ term to a posting list of document identifiers and term counts. This project is
 designed for teaching and experimentation with distributed storage, shuffle
 behaviour, and scalability analysis.
 
+This is a joint project built by **Ahmed Mossad** and **Habiba Arafa**.
+
 ## Team members
 
 - Ahmed Mossad
