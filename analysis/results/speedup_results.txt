@@ -1,26 +1,34 @@
 ============================================================
-EXECUTION TIME VS CLUSTER SIZE
+REVERSE INDEX - PERFORMANCE ANALYSIS REPORT
 ============================================================
-reducers  execution_time_seconds  speedup
-1         39.0                     1.00x
-2         34.0                     1.15x
-3         30.0                     1.30x
+
+RESULTS TABLE:
+  Nodes   Reducers  Time (s)  Speedup
+ 1 Node 2 Reducers         6     1.00
+ 1 Node 3 Reducers         6     1.00
+2 Nodes 2 Reducers         9     0.67
+2 Nodes 3 Reducers         8     0.75
+3 Nodes 2 Reducers         7     0.86
+3 Nodes 3 Reducers         7     0.86
 
 ============================================================
-EFFICIENCY ANALYSIS
+SPEEDUP VALUES:
 ============================================================
-2 reducers: 57.4% efficient, 42.6% overhead
-   speedup: 1.15x (ideal: 2x)
-3 reducers: 43.3% efficient, 56.7% overhead
-   speedup: 1.30x (ideal: 3x)
+1 Node   | 2 Reducers | 6s | Speedup: 1.00x
+1 Node   | 3 Reducers | 6s | Speedup: 1.00x
+2 Nodes  | 2 Reducers | 9s | Speedup: 0.67x
+2 Nodes  | 3 Reducers | 8s | Speedup: 0.75x
+3 Nodes  | 2 Reducers | 7s | Speedup: 0.86x
+3 Nodes  | 3 Reducers | 7s | Speedup: 0.86x
 
 ============================================================
-AMDAHL'S LAW ANALYSIS
+AMDAHL'S LAW ANALYSIS:
 ============================================================
-parallelizable fraction (p): 25.6%
-serial fraction (1-p): 74.4%
-maximum theoretical speedup with infinite reducers: 1.34x
 
-============================================================
-analysis complete
-============================================================
+2 Reducers:
+  2 Nodes: speedup=0.67x -> sequential portion = 200.0%
+  3 Nodes: speedup=0.86x -> sequential portion = 125.0%
+
+3 Reducers:
+  2 Nodes: speedup=0.75x -> sequential portion = 166.7%
+  3 Nodes: speedup=0.86x -> sequential portion = 125.0%
