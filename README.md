@@ -149,4 +149,4 @@ Full project report: [Google Docs](https://docs.google.com/document/d/1IyiDaDBKH
 ## Authors
 
 - **Ahmed Mossad** — Data Science & AI, Zewail City
-- **Habiba Arafa**
+- **Habiba Arafa** — Data Science & AI, Zewail City
