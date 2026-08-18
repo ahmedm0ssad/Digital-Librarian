@@ -1,5 +1,10 @@
 # The Digital Librarian
 
+[![Java](https://img.shields.io/badge/Java-1.8-ED8B00?style=flat&logo=java&logoColor=white)](https://www.java.com/)
+[![Hadoop](https://img.shields.io/badge/Hadoop-3.3.6-66CCFF?style=flat&logo=apachehadoop&logoColor=white)](https://hadoop.apache.org/)
+[![Maven](https://img.shields.io/badge/Maven-C71A36?style=flat&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+
 A **distributed reverse-indexing system** built on **HDFS and Hadoop MapReduce**. The Digital Librarian ingests a corpus of Project Gutenberg books and produces an inverted index mapping every term to a posting list of document identifiers and per-document term counts — enabling fast full-text search over large document collections.
 
 > Joint project by **Ahmed Mossad** and **Habiba Arafa** — Big Data course (DSAI 427).
@@ -40,7 +45,7 @@ The **Combiner** reduces network shuffle by **~40–60%**.
 ## Repository Structure
 
 ```
-digital-librarian/
+Digital-Librarian/
 ├── src/main/java/digital/librarian/   # Java MapReduce classes
 │   ├── ReverseIndexMapper.java        #   tokenizes + filters stopwords
 │   ├── ReverseIndexCombiner.java      #   local aggregation (optimization)
